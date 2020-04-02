@@ -107,8 +107,8 @@ enum ui_internal_messages
 
 #define LED_RED     (LED_0_STATE)
 #define LED_GREEN   (LED_1_STATE)
-#define LED_BLUE    (LED_1_STATE)//(LED_2_STATE)
-#define LED_WHITE   (LED_1_STATE)
+#define LED_BLUE    (LED_1_STATE | LED_2_STATE)//(LED_2_STATE)
+#define LED_WHITE   (LED_1_STATE | LED_2_STATE)
 #define LED_YELLOW  (LED_RED | LED_GREEN)
 
 /*!@} */
@@ -228,7 +228,7 @@ const ledPattern app_led_pattern_peer_pair_success[] =
 const ledPattern app_led_pattern_dfu[] = 
 {
     LED_LOCK,
-    LED_ON(LED_RED),LED_ON(LED_WHITE),LED_WAIT(4000), LED_WAIT(1000),
+    LED_ON(LED_RED),LED_ON(LED_BLUE),LED_WAIT(4000), LED_WAIT(1000),
     LED_UNLOCK,
     LED_REPEAT(0, 0)
 };
@@ -237,7 +237,7 @@ const ledPattern app_led_pattern_dfu[] =
 #ifdef INCLUDE_AV
 const ledPattern app_led_pattern_streaming[] =
 {
-    LED_OFF(LED_RED),LED_OFF(LED_WHITE),LED_WAIT(4000), LED_WAIT(1000),
+    LED_OFF(LED_RED),LED_OFF(LED_BLUE),LED_WAIT(4000), LED_WAIT(1000),
     LED_REPEAT(0, 0),
 
 };
@@ -246,7 +246,7 @@ const ledPattern app_led_pattern_streaming[] =
 #ifdef INCLUDE_AV
 const ledPattern app_led_pattern_streaming_aptx[] =
 {
-    LED_OFF(LED_RED),LED_OFF(LED_WHITE),LED_WAIT(4000), LED_WAIT(1000),
+    LED_OFF(LED_RED),LED_OFF(LED_BLUE),LED_WAIT(4000), LED_WAIT(1000),
     LED_REPEAT(0, 0),
 
 };
@@ -254,14 +254,14 @@ const ledPattern app_led_pattern_streaming_aptx[] =
 
 const ledPattern app_led_pattern_sco[] = 
 {
-    LED_OFF(LED_RED),LED_OFF(LED_WHITE),LED_WAIT(4000), LED_WAIT(1000),
+    LED_OFF(LED_RED),LED_OFF(LED_BLUE),LED_WAIT(4000), LED_WAIT(1000),
     LED_REPEAT(0, 0),
 
 };
 
 const ledPattern app_led_pattern_call_incoming[] = 
 {
-    LED_OFF(LED_RED),LED_OFF(LED_WHITE),LED_WAIT(4000), LED_WAIT(1000),
+    LED_OFF(LED_RED),LED_OFF(LED_BLUE),LED_WAIT(4000), LED_WAIT(1000),
     LED_REPEAT(0, 0),
 
 };
@@ -275,7 +275,7 @@ const ledPattern app_led_pattern_enter_dut_mode[] =
 {
     LED_LOCK,
     LED_ON(LED_RED),
-    LED_ON(LED_WHITE), 
+    LED_ON(LED_BLUE), 
     LED_WAIT(4000), LED_WAIT(1000),
     LED_UNLOCK,
     LED_REPEAT(0, 0),
@@ -292,10 +292,9 @@ const ledPattern app_led_pattern_linkback_handset[] =
 const ledPattern app_led_pattern_factory_reset[] = 
 {
     LED_LOCK,
-    LED_ON(LED_RED), LED_ON(LED_BLUE),LED_WAIT(200),LED_OFF(LED_RED), LED_OFF(LED_BLUE),LED_WAIT(200),
+    LED_ON(LED_RED), LED_WAIT(200),LED_OFF(LED_RED), LED_WAIT(200),
     LED_UNLOCK,
-    LED_REPEAT(1, 2),
-    LED_OFF(LED_WHITE), LED_WAIT(4000),
+    LED_REPEAT(1, 5),
     LED_END
 
 };
@@ -1257,7 +1256,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
 							appConManagerAllowHandsetConnect(TRUE);
 							appPeerSyncSend(FALSE); 			
 							appHfpConnectHandset(); 								
-							appAvConnectHandset(RULE_POST_HANDSET_CONNECT_ACTION_NONE);
+							appAvConnectHandset(RULE_POST_HANDSET_CONNECT_ACTION_PLAY_MEDIA);
 							MessageSendLater(appGetUiTask(),APP_LINKBACK_FAILED_ENTER_PAIRING,0,(POWER_ON_LINKBACK_TIMEOUT - POWER_ON_LINKBACK_HANDSET_TIME));
 						}
 					}
@@ -1434,7 +1433,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
 					reconnect_num -= 1;
 					DEBUG_LOG("APP_USER_RECONNECT_HANDSET");				
 					/* Connect AVRCP and A2DP to handset */
-					appAvConnectHandset(RULE_POST_HANDSET_CONNECT_ACTION_NONE);	
+					appAvConnectHandset(RULE_POST_HANDSET_CONNECT_ACTION_PLAY_MEDIA);	
 					appHfpConnectHandset(); 
 					if(reconnect_num)
 					{

@@ -213,7 +213,7 @@ typedef enum
 #define appConfigPeerPairingMinRssi() (-60)
 #else
 /*! Minimum RSSI to pair with a device */
-#define appConfigPeerPairingMinRssi() (-50)
+#define appConfigPeerPairingMinRssi() (-60)
 #endif
 
 /*! Minimum difference in RSSI between devices discovered 

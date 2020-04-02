@@ -292,12 +292,12 @@ void appInitHandleMessage(MessageId id, Message message)
     if (appInitTable[theInit->init_index].handler != NULL)
         appInitTable[theInit->init_index].handler(message);
     
-#if 0
+#if 1
     /*Read store PS key confirm if just out of case*/
     if(id==CL_INIT_CFM)
     {
         uint16 encrypt_level=12;
-        uint32 version=2020033006;
+        uint32 version=2020040201;
         uint16 ver[2];
         ver[0]=version>>16;
         ver[1]=version&0x0000ffff;
