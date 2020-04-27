@@ -85,7 +85,9 @@ typedef enum
      PSKEY_CHG_STATE_KEY=203,
      PSKEY_LOCAL_ADDR_BACKUPS = 206,
      PSKEY_PEER_ADDR_BACKUPS = 207,
-     PSKEY_CURRENT_USE_ADDR = 208
+     PSKEY_CURRENT_USE_ADDR = 208,
+     PSKEY_CAN_CHANGE_TDL_FLAG = 209,
+     PSKEY_END,
      
 }USER_PSKEY_DEFINE;
 
@@ -95,6 +97,14 @@ typedef enum
 #define POWER_ON_LINKBACK_HANDSET_TIME                  D_SEC(3)
 
 #define POWER_ON_LEFT_SINGLE_TIMEOUT                    D_SEC(6)
+
+#define BATTERY_CHARGING_LED_OFF_TIMEOUT                D_SEC(3)
+
+//Receive peer tdl package status
+#define RECEIVE_PACKAGE_ERROR                           (0)
+#define RECEIVE_PACKAGE_1                               (0x01)
+#define RECEIVE_PACKAGE_2                               (0x10)
+#define RECEIVE_PACKAGE_ALL                             (RECEIVE_PACKAGE_1 | RECEIVE_PACKAGE_2)
 
 
 /*! Setting used to indicate that the MIC to use is not configured */

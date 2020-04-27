@@ -980,6 +980,17 @@ static void ProcessOTAControlMessage(uint8 ota_msg_id, const uint8* payload, int
             }
             break;
 
+        case SFWD_OTA_MSG_SYNC_LED_IDLE:            
+            DEBUG_LOG("SFWD_OTA_MSG_SYNC_LED_IDLE");
+            if(appUserIsHeadsetPowerOn() && appChargerIsDisconnected())
+            {
+                if(appConfigIsRight())
+                {
+                    appUiIdleActive();
+                }
+            }
+            break;
+			
             
         case SFWD_OTA_MSG_SYNC_LED_HANDSET_CONNECTED_IDLE:
             {
@@ -1012,7 +1023,30 @@ static void ProcessOTAControlMessage(uint8 ota_msg_id, const uint8* payload, int
                 
             }
             break;
-			
+
+
+        case SFWD_OTA_MSG_SYNC_LED_HANDSET_PAIR:
+            DEBUG_LOG("SFWD_OTA_MSG_SYNC_LED_HANDSET_PAIR");
+            if(appUserIsHeadsetPowerOn() && appChargerIsDisconnected())
+            {
+                if(appConfigIsRight())
+                {
+                    appLedSetPattern(app_led_pattern_pairing, LED_PRI_MED); \
+                }
+            }
+            break;
+
+        case SFWD_OTA_MSG_SYNC_STOP_PRIORITY_MED:
+            DEBUG_LOG("SFWD_OTA_MSG_SYNC_STOP_PRIORITY_MED");
+            if(appSmIsOutOfCase())
+            {
+                if(!appDeviceIsHandsetAnyProfileConnected())
+                {
+                    appLedStopPattern(LED_PRI_MED);
+                }
+            }
+            break;
+						
         default:
             DEBUG_LOG("Unhandled OTA");
             Panic();
@@ -2828,6 +2862,11 @@ void appScoFwdSetWallclock(Sink sink)
     theScoFwd->wallclock_sink = sink;
 }
 
+void appScoFwdSyncLedIdleMode(void)
+{
+	SendOTAControlMessage(SFWD_OTA_MSG_SYNC_LED_IDLE);
+   
+}
 
 void appScoFwdSyncLedHandsetConnectedIdleMode(void)
 {
@@ -2853,3 +2892,13 @@ void appScoFwdSyncVoice(void)
 }
 
 
+void appScoFwdSyncLedHandsetPairMode(void)
+{
+	SendOTAControlMessage(SFWD_OTA_MSG_SYNC_LED_HANDSET_PAIR);   
+}
+
+
+void appScoFwdSyncLedStopPriorityMed(void)
+{
+	SendOTAControlMessage(SFWD_OTA_MSG_SYNC_STOP_PRIORITY_MED);   
+}

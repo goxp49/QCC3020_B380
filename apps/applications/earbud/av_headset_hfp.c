@@ -1062,9 +1062,7 @@ static void appHfpHandleHfpAudioConnectConfirmation(const HFP_AUDIO_CONNECT_CFM_
 static void appHfpHandleHfpAudioDisconnectIndication(const HFP_AUDIO_DISCONNECT_IND_T *ind)
 {
     DEBUG_LOGF("appHfpHandleHfpAudioDisconnectIndication(%d)", ind->status);
-#ifdef MEDIA_START_CONFIRM
-	can_start_a2dp_stream=0;
-#endif
+
     switch (appHfpGetState())
     {
         case HFP_STATE_CONNECTED_IDLE:
@@ -1112,11 +1110,17 @@ static void appHfpHandleHfpAudioDisconnectIndication(const HFP_AUDIO_DISCONNECT_
                 appAvStreamingResume(AV_SUSPEND_REASON_SCO);
 #endif
             }
+            #ifdef MEDIA_START_CONFIRM
+               can_start_a2dp_stream=0;
+            #endif
         }
         return;
                     
         default:
             appHfpError(HFP_AUDIO_DISCONNECT_IND, ind);
+            #ifdef MEDIA_START_CONFIRM
+            can_start_a2dp_stream=0;
+            #endif
             return;
     }
 }

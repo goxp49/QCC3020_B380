@@ -208,11 +208,34 @@ static void appPeerSigEnterConnected(void)
     //Clear link loss connect to peer
     MessageCancelAll(appGetUiTask(), APP_LINK_LOSS_LINKBACK_PEER_PROCESS);
 
+#if 0
     if(appConfigIsLeft() && (appGetState() == APP_STATE_HANDSET_PAIRING))
     {
         //sync led
         appScoFwdSyncLedLinkBack();
     }
+#else
+    //The left ear determines the LED status of the right ear because the synchronization to the ear is not complete
+    if(appConfigIsLeft())
+    {
+        if(appDeviceIsHandsetAnyProfileConnected())
+        {
+            appScoFwdSyncLedHandsetConnectedIdleMode();
+        }
+        else
+        {
+            appScoFwdSyncLedIdleMode();
+        }
+
+        //sync led when left ear is pairing with the other ear 
+        if(appGetState() == APP_STATE_HANDSET_PAIRING)
+        {
+            appScoFwdSyncLedHandsetPairMode();
+
+        }
+    }
+
+#endif
 
 }
 
@@ -1592,6 +1615,18 @@ bool appPeerSigHandleTdlMessageInd(AV_AVRCP_VENDOR_PASSTHROUGH_IND_T *ind)
 				d_offset += TDL_BASE_INDEX_PSKEY_SIZE;
 			
 			}
+
+            //verify backup
+            if(appCheckReceiveMatchWithTdl())
+            {
+                appUserSetReceivePeerPackageStage(RECEIVE_PACKAGE_1);
+            }
+            else
+            {
+                appUserSetReceivePeerPackageStage(RECEIVE_PACKAGE_ERROR);
+            }
+            
+            DEBUG_LOG("##PeerPackageStage-1 : %d##",appUserGetReceivePeerPackageState());
 		}
 
 	}
@@ -1607,6 +1642,10 @@ bool appPeerSigHandleTdlMessageInd(AV_AVRCP_VENDOR_PASSTHROUGH_IND_T *ind)
 		d_offset += SM_KEY_STATE_IR_ER_PSKEY_SIZE;
 		memcpy(data, &ind->payload[d_offset], TRUSTED_DEVICE_LIST_PSKEY_SIZE);
 		PsStore(PSKEY_TRUSTED_DEVICE_LIST_BACKUPS,data,(TRUSTED_DEVICE_LIST_PSKEY_SIZE/2));
+        
+        appUserSetReceivePeerPackageStage( appUserGetReceivePeerPackageState() | RECEIVE_PACKAGE_2);
+        
+        DEBUG_LOG("##PeerPackageStage-2 : %d##",appUserGetReceivePeerPackageState());
 	}
 	else
 	{

@@ -418,6 +418,12 @@ static void appA2dpEnterConnectedSignalling(avInstanceTaskData *theInst)
         DEBUG_LOG("##111111 %d##");
         appUiAvConnected(theInst->a2dp.flags & A2DP_CONNECT_SILENT);
         
+        //Notify peer switch led mode
+        if(appConfigIsLeft())
+        {
+            appScoFwdSyncLedStopPriorityMed();
+        }
+        
         appScoFwdSyncLedHandsetConnectedIdleMode();
         
         //update led mode
@@ -450,16 +456,6 @@ static void appA2dpEnterConnectedSignalling(avInstanceTaskData *theInst)
     else
     {
         DEBUG_LOG("##22222222 %d##", (theInst->a2dp.flags & A2DP_CONNECT_SILENT));
-
-        if(!appDeviceIsHandsetAnyProfileConnected() && !appPeerSyncIsPeerHandsetA2dpConnected())
-        {
-            appUiIdleActive();
-        }
-        else
-        {
-            appUiIdleConnectedActive();
-        }
-
         
     #ifdef SINGLE_BDADDR
 		appScanBleStopScanning();
@@ -1765,12 +1761,15 @@ static void appA2dpHandleA2dpSignallingDisconnectInd(avInstanceTaskData *theInst
             else if (ind->status == a2dp_success)
             {
 			#ifdef ENTER_PAIRING_HANDSET_DISCONNECT
-                //update led mode
-                appUiIdleActive();
                 /* Play disconnected UI if not the peer */
                 if (!appDeviceIsPeer(&theInst->bd_addr) && (appUserIsResetState() == FALSE))
                 {
                     DEBUG_LOG("##########444444444##########");
+                    
+                    //update led mode
+                    appUiIdleActive();
+                    appScoFwdSyncLedIdleMode();
+                    
                     appUiAvDisconnected();
                 }
             

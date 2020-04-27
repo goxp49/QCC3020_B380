@@ -198,10 +198,13 @@ extern void appScoFwdInitMicPacketising(Source mic_source);
 extern void appScoFwdMicForwardingEnable(bool enable);
 extern void appScoFwdPeerDisconnected(void);
 extern void appScoFwdPeerDisconnected(void);
+extern void appScoFwdSyncLedIdleMode(void);
 extern void appScoFwdSyncLedHandsetConnectedIdleMode(void);
 extern void appScoFwdSyncLedLinkBack(void);
 extern void appScoFwdSyncLedHandsetPairingSuccess(void);
 extern void appScoFwdSyncVoice(void);
+extern void appScoFwdSyncLedHandsetPairMode(void);
+extern void appScoFwdSyncLedStopPriorityMed(void);
 
 #define SFWD_MICFWD_RECV_CHAIN_BUFFER_SIZE     1536
 
@@ -368,10 +371,16 @@ enum av_headset_scofwd_ota_messages
     SFWD_OTA_MSG_SYNC_LED_LINKBACK,
     
     SFWD_OTA_MSG_SYNC_LED_HANDSET_PAIRING_SUCCESS,
-    
+
+    SFWD_OTA_MSG_SYNC_LED_IDLE,
+        
     SFWD_OTA_MSG_SYNC_LED_HANDSET_CONNECTED_IDLE,
         
     SFWD_OTA_MSG_SYNC_VOICE,
+    
+    SFWD_OTA_MSG_SYNC_LED_HANDSET_PAIR,
+
+    SFWD_OTA_MSG_SYNC_STOP_PRIORITY_MED,
 };
 
 extern void appScoFwdHandleHfpAudioConnectConfirmation(const HFP_AUDIO_CONNECT_CFM_T *cfm);

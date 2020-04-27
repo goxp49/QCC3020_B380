@@ -198,7 +198,7 @@ const ledPattern app_led_pattern_idle_connected[] =
 
 const ledPattern app_led_pattern_pairing[] = 
 {
-    LED_DIM_ON(LED_BLUE, 40),LED_DIM_OFF(LED_BLUE, 40),
+    LED_DIM_ON(LED_RED, 40),LED_DIM_OFF(LED_RED, 40),
     LED_REPEAT(0, 0)
 };
 
@@ -292,18 +292,13 @@ const ledPattern app_led_pattern_linkback_handset[] =
 const ledPattern app_led_pattern_factory_reset[] = 
 {
     LED_LOCK,
-    LED_ON(LED_RED), LED_WAIT(200),LED_OFF(LED_RED), LED_WAIT(200),
+    LED_ON(LED_RED), LED_WAIT(300),LED_OFF(LED_RED), LED_WAIT(300),
     LED_UNLOCK,
-    LED_REPEAT(1, 5),
+    LED_REPEAT(1, 2),
     LED_END
 
 };
 
-const ledPattern app_led_pattern_charging[] = 
-{
-    LED_ON(LED_RED), LED_WAIT(200),
-    LED_END
-};
 
 
 /*! \endcond led_patterns_well_named
@@ -1304,7 +1299,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
                 DEBUG_LOG("UI_INTERNAL--------APP_USER_STOP_BLE_SCAN");
 				appScanBleStopScanning();
 				if(appConfigIsRight() && appPeerSyncIsChargerConnected() && (!appPeerSyncIsPeerHandsetA2dpConnected())
-					&& (!appPeerSyncIsPeerHandsetHfpConnected()))
+					&& (!appPeerSyncIsPeerHandsetHfpConnected()) && appUserGetCanChangeTdl())
 				{
 					/*need to change to left addr*/
 					appSmDisconnectAllLink();
@@ -1313,7 +1308,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
 					MessageSendLater(appGetUiTask(),APP_CHANGE_LOCAL_ADDR,0,500);
 					
 				}
-				else if((!appPeerSyncIsComplete()) && appConfigIsRight() && appDeviceGetPeerBdAddr(NULL) && (!appUiIsMasterAddrInUsed()))
+				else if((!appPeerSyncIsComplete()) && appConfigIsRight() && appDeviceGetPeerBdAddr(NULL) && (!appUiIsMasterAddrInUsed()) && appUserGetCanChangeTdl())
 				{
 					appSmDisconnectAllLink();
 					appPeerSigExchangeTdlRecord();
@@ -1549,6 +1544,11 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
     case APP_RESET_LED_STOP:
         DEBUG_LOG("BUTTON--------APP_RESET_LED_STOP");
         appUserSetResetState(FALSE);
+        if(ChargerStatus() == STANDBY)
+        {
+            DEBUG_LOG("Restart timer");
+            MessageSendLater(&appGetCharger()->task,CHARGER_COMPLETE_POWER_OFF,0,D_SEC(60));
+        }
         break;
 
        
@@ -1589,6 +1589,8 @@ void appUiInit(void)
 	theUi->auto_switch_off_timer = 0;
 #endif
     theUi->power_on_key_check_num = 0;
+    theUi->receive_peer_package_status = RECEIVE_PACKAGE_ALL;    
+
 }
 
 
@@ -2101,6 +2103,83 @@ bool appUiIsBdaddrMatchWithTdl(void)
 	return TRUE;
 }
 
+/*
+	@breif:check if the receive package is match with current addr
+	@param: void
+	@return: bool, TRUE is match, FALSE is not
+*/
+
+bool appCheckReceiveMatchWithTdl(void)
+{
+	uint16 data[3];
+	uint8 i, attr_verify = FALSE, base_verify = FALSE;
+	bdaddr current_addr,backup_addr;
+	bdaddr record_addr;
+    
+    DEBUG_LOG("appUiIsBdaddrMatchWithTdl");
+        
+	if(appUiGetStoreAddr(&current_addr,PSKEY_CURRENT_USE_ADDR))
+	{
+	
+        DEBUG_LOG("appUiGetStoreAddr, bdaddr %04x:%02x:%06x",
+                    current_addr.nap, current_addr.uap, current_addr.lap);
+
+        //get unused addr
+        if(appUiGetStoreAddr(&backup_addr,PSKEY_LOCAL_ADDR_BACKUPS))
+        {
+            if(BdaddrIsSame(&backup_addr, &current_addr))
+            {
+                appUiGetStoreAddr(&backup_addr,PSKEY_PEER_ADDR_BACKUPS);
+            }
+        }
+        
+		for(i=0;i<8;i++)
+		{
+			PsRetrieve(220+i, data, 3);
+			record_addr.nap = data[0];
+			record_addr.uap = (uint8)((data[1]>>8) & 0xff);
+			record_addr.lap = (uint32)((uint32)((data[1] & 0xff) << 16)| data[2]);	
+            //The address currently used should appear in the package received
+			if(BdaddrIsSame(&current_addr, &record_addr))
+			{
+				attr_verify = TRUE;
+			}
+            //Unused addresses should not appear in received packets
+            if(BdaddrIsSame(&backup_addr, &record_addr))
+            {            
+                DEBUG_LOG("Verify fail - 1");
+                return FALSE;
+            }
+
+            PsRetrieve(242+i, data, 3);
+			record_addr.nap = data[0];
+			record_addr.uap = (uint8)((data[1]>>8) & 0xff);
+			record_addr.lap = (uint32)((uint32)((data[1] & 0xff) << 16)| data[2]);		
+            //The address currently used should appear in the package received
+			if(BdaddrIsSame(&current_addr, &record_addr))
+			{
+				base_verify = TRUE;
+			}            
+            //Unused addresses should not appear in received packets
+            if(BdaddrIsSame(&backup_addr, &record_addr))
+            {
+                DEBUG_LOG("Verify fail - 2");
+                return FALSE;
+            }
+		}
+	}
+
+    if((attr_verify == TRUE) && (base_verify == TRUE))
+    {
+        return TRUE;
+    }
+    else
+    {
+        DEBUG_LOG("Verify fail - 3");
+        return FALSE;
+    }
+    
+}
 
 /*
 	@breif: clear all pskey which used to store tdl backups data
@@ -2214,4 +2293,31 @@ bool appUserIsLinkLossState(void)
 
 }
 
+void appUserSetReceivePeerPackageStage(uint8 stage)
+{
+	uiTaskData *theUi = appGetUi();
+    uint16 data = stage;
+	theUi->receive_peer_package_status = stage;
+
+    //
+	PsStore(PSKEY_CAN_CHANGE_TDL_FLAG, &data, 1);
+}
+
+uint8 appUserGetReceivePeerPackageState(void)
+{
+	uiTaskData *theUi = appGetUi();	
+    
+    DEBUG_LOG("##appUserGetReceivePeerPackageState : %d##",theUi->receive_peer_package_status);
+	return theUi->receive_peer_package_status;
+
+}
+
+bool appUserGetCanChangeTdl(void)
+{
+	uiTaskData *theUi = appGetUi();	
+    
+    DEBUG_LOG("##appUserGetCanChangeTdl : %d##",(theUi->receive_peer_package_status == RECEIVE_PACKAGE_ALL));
+	return (theUi->receive_peer_package_status == RECEIVE_PACKAGE_ALL);
+
+}
 

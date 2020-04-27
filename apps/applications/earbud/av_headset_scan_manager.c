@@ -340,7 +340,7 @@ void appScanAdvertisingReportInd(const CL_DM_BLE_ADVERTISING_REPORT_IND_T *ind)
 			{
 		        DEBUG_LOG("same addr need to change");
 				
-				if(appUiGetStoreAddr(&addr, PSKEY_PEER_ADDR_BACKUPS))
+				if(appUiGetStoreAddr(&addr, PSKEY_PEER_ADDR_BACKUPS) && appDeviceGetPeerBdAddr(NULL) && appUserGetCanChangeTdl())
 				{		
 					if(appUiIsBdaddrMatchWithTdl())
 					{

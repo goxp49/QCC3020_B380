@@ -120,7 +120,10 @@ extern bool appUserIsHandsetPairLedState(void);
 extern void appUserMainOutVolumeChange(volume_direction direction);
 extern void appUserSetDutState(bool OnOff);
 extern bool appUserIsDutState(void);
-
+extern void appUserSetReceivePeerPackageStage(uint8 stage);
+extern uint8 appUserGetReceivePeerPackageState(void);
+extern bool appUserGetCanChangeTdl(void);
+extern bool appCheckReceiveMatchWithTdl(void);
 
 /*! \brief Time between mute reminders (in seconds) */
 #define APP_UI_MUTE_REMINDER_TIME               (15)
@@ -200,6 +203,9 @@ typedef struct
 #endif
     uint8 power_on_key_check_num;
 
+    uint8 receive_peer_package_status;
+    
+
 } uiTaskData;
 
 
@@ -254,7 +260,6 @@ extern const ledPattern app_led_pattern_linkback_handset[];
 extern const ledPattern app_led_pattern_factory_reset[];
 extern const ledPattern app_led_pattern_peer_pair_success[];
 extern const ledPattern app_led_pattern_pair_success[];
-extern const ledPattern app_led_pattern_charging[];
 
 extern const ringtone_note app_tone_button[];
 extern const ringtone_note app_tone_button_2[];
@@ -615,7 +620,13 @@ do \
 
 #ifdef INCLUDE_CHARGER
 /*! \brief Charger connected */
-#define appUiChargerConnected()
+#define appUiChargerConnected() \
+{\
+    appLedStopPattern(LED_PRI_LOW);\
+    appLedStopPattern(LED_PRI_MED);\
+    appLedStopPattern(LED_PRI_HIGH);\
+    appLedSetFilter(app_led_filter_charging_ok, 1);\
+}
 #endif
 
 #ifdef INCLUDE_CHARGER
@@ -627,19 +638,13 @@ do \
 #ifdef INCLUDE_CHARGER
 /*! \brief Charger charging, enable charging filter */
 #define appUiChargerChargingLow() \
-do{\
-    appLedSetPattern(app_led_pattern_charging, LED_PRI_HIGH);\
-    appLedSetFilter(app_led_filter_charging_ok, 1);\
-}while(0)
+    appLedSetFilter(app_led_filter_charging_low, 1)
 #endif
 
 #ifdef INCLUDE_CHARGER
 /*! \brief Charger charging, enable charging filter */
 #define appUiChargerChargingOk() \
-do{\
-    appLedSetPattern(app_led_pattern_charging, LED_PRI_HIGH);\
-    appLedSetFilter(app_led_filter_charging_ok, 1);\
-}while(0)
+    appLedSetFilter(app_led_filter_charging_ok, 1)
 #endif
 
 #ifdef INCLUDE_CHARGER

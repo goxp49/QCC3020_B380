@@ -315,7 +315,7 @@ static void appPeerSyncUpdatePeerInCase(bool peer_in_case)
         DEBUG_LOGF("appPeerSyncUpdatePeerInCase Prev %u New %u", current_peer_in_case_state, peer_in_case);
         appConnRulesSetEvent(appGetSmTask(), RULE_EVENT_PEER_IN_CASE);
 	#ifdef SINGLE_BDADDR
-		if(appConfigIsRight() && (!appDeviceIsHandsetConnected()) && (ps->peer_a2dp_connected))
+		if(appConfigIsRight() && (!appDeviceIsHandsetConnected()) && (ps->peer_a2dp_connected) && appUserGetCanChangeTdl())
 		{		
 			appPeerSigExchangeTdlRecord();
 			appSmDisconnectAllLink();

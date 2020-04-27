@@ -637,7 +637,11 @@ static void appPairingHandsetComplete(pairingTaskData *thePairing, pairingStatus
     if(status == pairingHandsetTimeout)
     {
         DEBUG_LOG("###pairingHandsetTimeout ------- POWER OFF : %d #####", status);
-        appUserPowerOff();
+        if(!appDeviceIsHandsetAnyProfileConnected() && !appPeerSyncIsPeerHandsetA2dpConnected() && !appPeerSyncIsPeerHandsetHfpConnected())
+        {
+            DEBUG_LOG("DO!");
+            appUserPowerOff();
+        }
     }
 }
 
@@ -1569,6 +1573,12 @@ static void appHandleInternalHandsetPairRequest(pairingTaskData *thePairing, PAI
 
             /* Store address of handset to pair with, 0 we should go discoverable */
             thePairing->bd_addr[0] = req->addr;
+
+            //only for pairing led sync
+            if(appConfigIsLeft())
+            {
+                appScoFwdSyncLedHandsetPairMode();
+            }
 
             /* no address, go discoverable for inquiry process */
             if (BdaddrIsZero(&req->addr))

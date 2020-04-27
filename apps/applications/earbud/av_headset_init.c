@@ -124,7 +124,20 @@ static void appInitHandleClInitCfm(Message message)
 		theInit->appInitIsClInitCompleted = 1;
 	}
 #ifdef SINGLE_BDADDR
-	if(!appUiIsBdaddrMatchWithTdl())
+
+    {
+        uint16 data[1] = {0};
+
+        PsRetrieve(PSKEY_CAN_CHANGE_TDL_FLAG, data, 1);
+        if((data[0] ==  RECEIVE_PACKAGE_1) || (data[0] ==  RECEIVE_PACKAGE_2) || (data[0] ==  RECEIVE_PACKAGE_ERROR))
+        {
+            uiTaskData *theUi = appGetUi(); 
+            theUi->receive_peer_package_status = (uint8)data[0];
+            DEBUG_LOG("###PSKEY_CAN_CHANGE_TDL_FLAG: %d ##",theUi->receive_peer_package_status);
+        }
+    }
+
+	if(!appUiIsBdaddrMatchWithTdl() && appUserGetCanChangeTdl())
 	{
 		appPeerSigExchangeTdlRecord();
 		ConnectionInitTrustDevice();
@@ -165,7 +178,7 @@ static void appInitHandleClDmLocalBdAddrCfm(Message message)
     {
 	    bdaddr addr;
 		/*if it is not first time we store addr*/
-		if(appUiGetStoreAddr(&addr,PSKEY_LOCAL_ADDR_BACKUPS))
+		if(appUiGetStoreAddr(&addr,PSKEY_LOCAL_ADDR_BACKUPS) && BdaddrIsSame(&addr,&cfm->bd_addr))
 		{
 			appGetInit()->appInitIsRealLeft = addr.lap & 0x01;
 			appUiConvertBdaddrToPsStore(&cfm->bd_addr, PSKEY_CURRENT_USE_ADDR);
@@ -292,7 +305,7 @@ void appInitHandleMessage(MessageId id, Message message)
     if (appInitTable[theInit->init_index].handler != NULL)
         appInitTable[theInit->init_index].handler(message);
     
-#if 1
+#if 0
     /*Read store PS key confirm if just out of case*/
     if(id==CL_INIT_CFM)
     {

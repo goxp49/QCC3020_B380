@@ -32,13 +32,13 @@
 
 #define AUDIO_PSKEY_GAIN_WIDE	    (0x200382UL)
 
-//#define AUDIO_PSKEY_NOISE_NARROW	(0x001280UL)
+#define AUDIO_PSKEY_NOISE_NARROW	(0x001280UL)
 
-//#define AUDIO_PSKEY_NOISE_WIDE	    (0x001300UL)
+#define AUDIO_PSKEY_NOISE_WIDE	    (0x001300UL)
 
-//#define AUDIO_PSKEY_EQ	            (0x002480UL)
+#define AUDIO_PSKEY_EQ	            (0x002480UL)
 
-//static const uint16 MicGainParam[] = { 0x1004 ,0x0001 ,0x0001 ,0x0000 ,0x08E8 ,0x000B ,0x0001 ,0x0000 ,0x0001 ,0x0010 ,0x0012 ,0x0000 ,0x4803 ,0x0000 ,0x0002 ,0x32B7 ,0x71ED ,0x3D16 ,0x32DC ,0x85D3 ,0x9A48 ,0x3D16 ,0x32DC ,0x3A3D ,0xC4FF ,0x85E4 ,0xF98E ,0x1983 ,0xAB31 ,0xAE25 ,0x5C6C ,0x4EB8 ,0x3E6D ,0x283B ,0xE99E ,0xAE25 ,0x5C6C ,0x2EDE ,0xEA92 ,0x3BE9 ,0xAE46 ,0x6DA4 ,0x80FA ,0x1C83 ,0x6B8D ,0x3BE9 ,0xAE46 ,0x0024 ,0x0001 ,0x0000 ,0x0000};
+static const uint16 MicGainParam[] = { 0x1005 ,0x0001 ,0x0001 ,0x0000 ,0x05DC ,0x000B ,0x0001 ,0x0000 ,0x0001 ,0x0010 ,0x0001 ,0x0000 ,0x4903 ,0x0012 ,0x0010 ,0x23FD ,0x6678 ,0x2FB4 ,0x1957 ,0x952D ,0x1C41 ,0x3D36 ,0x9DAF ,0x2CEA ,0xB706 ,0x952D ,0x1C41 ,0x0F03 ,0xA553 ,0xB72C ,0xBCD6 ,0x4DB8 ,0xEDEE ,0x1CBC ,0x9341 ,0xB72C ,0xBCD6 ,0x0D63 ,0x244A ,0xD166 ,0xD7C5 ,0x6C66 ,0xCA70 ,0xF9C9 ,0xEEBB ,0xD166 ,0xD7C5 ,0x0024 ,0x0001 ,0x0000 ,0x0000};
 
 //static const uint16 NoiseNarrowParam[] = { 0x1009 ,0x0000 ,0x0001 ,0x0000 ,0x380C ,0x0006 ,0x0002 ,0xEEFF ,0x9600 ,0xE6FF ,0xCA00 ,0x003B ,0x0001 ,0xF214 ,0x82C0 ,0x003F ,0x0002 ,0xE715 ,0xE600 ,0x03F7 ,0xCED9 ,0x0043 ,0x0001 ,0x0000 ,0x005A ,0x004A ,0x0001 ,0x0000 ,0x0000 ,0x004D ,0x0001 ,0xF906 ,0x2200 ,0x0057 ,0x0001 ,0x0007 ,0xAE14 ,0x0061 ,0x0001 ,0xEC00 ,0x0000};
 
@@ -1020,9 +1020,9 @@ static void appSmHandleInitConfirm(void)
 {
     DEBUG_LOG("appSmHandleInitConfirm");
 
-//    appUserSetAudiokey(AUDIO_PSKEY_GAIN_NARROW,MicGainParam,(sizeof(MicGainParam)/sizeof(MicGainParam[0])));
+    appUserSetAudiokey(AUDIO_PSKEY_GAIN_NARROW,MicGainParam,(sizeof(MicGainParam)/sizeof(MicGainParam[0])));
 
-//    appUserSetAudiokey(AUDIO_PSKEY_GAIN_WIDE,MicGainParam,(sizeof(MicGainParam)/sizeof(MicGainParam[0])));
+    appUserSetAudiokey(AUDIO_PSKEY_GAIN_WIDE,MicGainParam,(sizeof(MicGainParam)/sizeof(MicGainParam[0])));
 
 //    appUserSetAudiokey(AUDIO_PSKEY_NOISE_NARROW,NoiseNarrowParam,(sizeof(NoiseNarrowParam)/sizeof(NoiseNarrowParam[0])));
 
@@ -2020,12 +2020,6 @@ static void appSmHandleInternalDeleteHandsets(void)
 /*! \brief Handle request to start factory reset. */
 static void appSmHandleInternalFactoryReset(void)
 {
-    
-    DEBUG_LOG("appSmHandleInternalFactoryReset,appGetState: %0.4x",appGetState());
-    
-    DEBUG_LOG("#appChargerIsConnected : %d #",appChargerIsConnected());
-    DEBUG_LOG("#appDeviceGetHandsetBdAddr : %d #",appDeviceGetHandsetBdAddr(NULL));
-    DEBUG_LOG("#appDeviceGetPeerBdAddr : %d #",appDeviceGetPeerBdAddr(NULL));
 #ifdef SINGLE_BDADDR
     //check app state,prevent repeat the reset
     if(appChargerIsConnected() && (appDeviceGetHandsetBdAddr(NULL) || (appDeviceGetPeerBdAddr(NULL))))
