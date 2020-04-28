@@ -1088,6 +1088,11 @@ static void appSmHandlePairingPeerPairConfirm(PAIRING_PEER_PAIR_CFM_T *cfm)
                     appUserEnterPairingMode();
 				}
 			 }
+             else if(cfm->status == pairingNoPeerServiceRecord)
+             {
+                DEBUG_LOG("###pairingNoPeerServiceRecord#####");
+                appSetState(APP_STATE_STARTUP);
+             }
 			#else
              appSetState(APP_STATE_STARTUP);
 			#endif

@@ -105,9 +105,9 @@ enum ui_internal_messages
 #define LED_2_STATE  (1 << 0)
 #endif
 
-#define LED_RED     (LED_0_STATE)
+#define LED_RED     (LED_1_STATE)
 #define LED_GREEN   (LED_1_STATE)
-#define LED_BLUE    (LED_1_STATE | LED_2_STATE)//(LED_2_STATE)
+#define LED_BLUE    (LED_0_STATE)//(LED_2_STATE)
 #define LED_WHITE   (LED_1_STATE | LED_2_STATE)
 #define LED_YELLOW  (LED_RED | LED_GREEN)
 
