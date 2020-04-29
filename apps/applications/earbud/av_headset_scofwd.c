@@ -1046,6 +1046,109 @@ static void ProcessOTAControlMessage(uint8 ota_msg_id, const uint8* payload, int
                 }
             }
             break;
+
+
+        case SFWD_OTA_MSG_TWC_SINGLE_CLICK:
+            DEBUG_LOG("SFWD_OTA_MSG_TWC_SINGLE_CLICK");
+			if(appUserIsHeadsetPowerOn() && (appSmIsOutOfCase()))
+            {
+                if(appConfigIsLeft())
+                {
+                    hfp_call_state callstate = appHfpGetCallState();
+                    
+                    if(callstate == hfp_call_state_incoming)
+                    {   DEBUG_LOG("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                        appHfpCallAccept();
+                    }
+                    else if(callstate == hfp_call_state_twc_incoming)
+                    {
+                        HfpCallHoldActionRequest( hfp_primary_link,hfp_chld_hold_active_accept_other,0);
+                        DEBUG_LOG("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+                    }
+                    else if((callstate == hfp_call_state_active) || (callstate == hfp_call_state_outgoing))
+                    {
+                        appHfpCallHangup();
+                        DEBUG_LOG("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+                    }
+                    else if(callstate == hfp_call_state_held_active)
+                    {
+                        HfpCallHoldActionRequest( hfp_primary_link,hfp_chld_release_active_accept_other,0);
+                        DEBUG_LOG("eeeeeeeeeeeee");
+                    }
+                    /* If AVRCP to handset connected, send play or pause */
+                    else if (appDeviceIsHandsetAvrcpConnected())
+                        appAvPlayToggle(FALSE);
+                    /* If AVRCP is peer is connected and peer is connected to handset, send play or pause */
+                    else if (appDeviceIsPeerAvrcpConnectedForAv() && appPeerSyncIsComplete() && appPeerSyncIsPeerHandsetAvrcpConnected())
+                        appAvPlayToggle(FALSE);
+                }
+            }         
+            break;
+        
+        case SFWD_OTA_MSG_TWC_LONG_PRESS:
+            DEBUG_LOG("SFWD_OTA_MSG_TWC_LONG_PRESS");
+			if(appUserIsHeadsetPowerOn() && appSmIsOutOfCase())
+            {
+                if(appConfigIsLeft())
+                {
+                    hfp_call_state callstate = appHfpGetCallState();
+                    
+                    if(callstate == hfp_call_state_incoming)
+                    {
+                        appHfpCallReject();
+                    }                
+                    else if(callstate == hfp_call_state_twc_incoming)
+                    {
+                        HfpCallHoldActionRequest( hfp_primary_link,hfp_chld_release_held_reject_waiting,0);
+                    }
+                    else if (appScoFwdIsCallIncoming())
+                    {
+                        appScoFwdCallReject();
+                    }
+                    if (appHfpIsConnected() && (!appHfpIsCall())) 
+                    {
+                        if(appHfpIsVoiceRecognitionActive())
+                        {
+                            appHfpCallVoiceDisable();
+                        }
+                        else
+                        {
+                            appHfpCallVoice();
+                        }
+                    }
+                }                
+            }         
+            break;
+
+        case SFWD_OTA_MSG_TWC_DOUBLE_CLICK:
+            DEBUG_LOG("SFWD_OTA_MSG_TWC_DOUBLE_CLICK");
+			if(appUserIsHeadsetPowerOn() && appSmIsOutOfCase())
+            {
+                if(appConfigIsLeft())
+                {
+                
+                    hfp_call_state callstate = appHfpGetCallState();
+                    
+                    if(callstate == hfp_call_state_held_active)
+                    {
+                        HfpCallHoldActionRequest( hfp_primary_link,hfp_chld_hold_active_accept_other,0);
+                    }
+                    else if(appAvPlayStatus() == avrcp_play_status_playing)
+                    {
+                        if(appConfigIsRealRight())
+                        {                   
+                            appAvBackward();
+                        }
+                        else
+                        {
+                            appAvForward();
+                        }
+                    }
+                }
+
+            }         
+            break;
+
 						
         default:
             DEBUG_LOG("Unhandled OTA");
@@ -2902,3 +3005,21 @@ void appScoFwdSyncLedStopPriorityMed(void)
 {
 	SendOTAControlMessage(SFWD_OTA_MSG_SYNC_STOP_PRIORITY_MED);   
 }
+
+void appScoFwdTwcSingleClick(void)
+{
+	SendOTAControlMessage(SFWD_OTA_MSG_TWC_SINGLE_CLICK);
+}
+
+void appScoFwdTwcDoubleClick(void)
+{
+	SendOTAControlMessage(SFWD_OTA_MSG_TWC_DOUBLE_CLICK);
+}
+
+
+void appScoFwdTwcLongPress(void)
+{
+	SendOTAControlMessage(SFWD_OTA_MSG_TWC_LONG_PRESS);
+}
+
+

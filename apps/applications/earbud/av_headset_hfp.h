@@ -272,6 +272,9 @@ typedef struct
 /*! \brief Get current HFP state */
 #define appHfpGetState() (appGetHfp()->state)
 
+/*! \brief wllwj Get current call HFP state */
+#define appHfpGetCallState() (appGetHfp() ->call_state)
+
 /*! \brief Get current AG address */
 #define appHfpGetAgBdAddr() (&(appGetHfp()->ag_bd_addr))
 
@@ -344,6 +347,11 @@ extern void appHfpRegisterAtCmdTask(Task task);
 extern void appHfpStatusClientRegister(Task task);
 extern uint8 appHfpGetVolume(void);
 extern void appHfpScoFwdHandlingVolume(bool enabled);
+
+//wllwj
+void appHfpHandleMessage(Task task, MessageId id, Message message);
+
+
 
 #else
 

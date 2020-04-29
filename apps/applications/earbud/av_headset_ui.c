@@ -958,31 +958,40 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
             DEBUG_LOG("UI_INTERNAL--------APP_MFB_BUTTON_SHORT_PRESS");
 			if(appUserIsHeadsetPowerOn() && (appSmIsOutOfCase()))
 			{
-                if (appHfpIsCallIncoming())
-                    appHfpCallAccept();
-                else if (appScoFwdIsCallIncoming())
-                    appScoFwdCallAccept();
-                /* If voice call active, hangup */
-                else if (appHfpIsCallActive())
+			    if(appConfigIsLeft())
                 {
-                    appHfpCallHangup();
-                }
-                /* Sco Forward can be streaming a ring tone */
-                else if (appScoFwdIsReceiving() && !appScoFwdIsCallIncoming())
+                    hfp_call_state callstate = appHfpGetCallState();
+                    
+                    if(callstate == hfp_call_state_incoming)
+                    {   DEBUG_LOG("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                        appHfpCallAccept();
+                    }
+                    else if(callstate == hfp_call_state_twc_incoming)
+                    {
+                        HfpCallHoldActionRequest( hfp_primary_link,hfp_chld_hold_active_accept_other,0);
+                        DEBUG_LOG("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+                    }
+                    else if((callstate == hfp_call_state_active) || (callstate == hfp_call_state_outgoing))
+                    {
+                        appHfpCallHangup();
+                        DEBUG_LOG("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+                    }
+                    else if(callstate == hfp_call_state_held_active)
+                    {
+                        HfpCallHoldActionRequest( hfp_primary_link,hfp_chld_release_active_accept_other,0);
+                        DEBUG_LOG("eeeeeeeeeeeee");
+                    }
+                    /* If AVRCP to handset connected, send play or pause */
+                    else if (appDeviceIsHandsetAvrcpConnected())
+                        appAvPlayToggle(FALSE);
+                    /* If AVRCP is peer is connected and peer is connected to handset, send play or pause */
+                    else if (appDeviceIsPeerAvrcpConnectedForAv() && appPeerSyncIsComplete() && appPeerSyncIsPeerHandsetAvrcpConnected())
+                        appAvPlayToggle(FALSE);
+                } 
+                else
                 {
-                    appScoFwdCallHangup();
+                    appScoFwdTwcSingleClick();
                 }
-                /* If outgoing voice call, hangup */
-                else if (appHfpIsCallOutgoing())
-                {
-                    appHfpCallHangup();
-                }
-                /* If AVRCP to handset connected, send play or pause */
-                else if (appDeviceIsHandsetAvrcpConnected())
-                    appAvPlayToggle(FALSE);
-                /* If AVRCP is peer is connected and peer is connected to handset, send play or pause */
-                else if (appDeviceIsPeerAvrcpConnectedForAv() && appPeerSyncIsComplete() && appPeerSyncIsPeerHandsetAvrcpConnected())
-                    appAvPlayToggle(FALSE);
 			}
 		    break;
         
@@ -990,16 +999,30 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
             DEBUG_LOG("UI_INTERNAL--------APP_MFB_BUTTON_DOUBLE_PRESS");
 			if(appUserIsHeadsetPowerOn() && (appChargerIsDisconnected()))
             {
-                if(appAvPlayStatus() == avrcp_play_status_playing)
+            
+                if(appConfigIsLeft())
                 {
-                    if(appConfigIsRealLeft())
-                    {                   
-                        appAvBackward();
-                    }
-                    else
+                    hfp_call_state callstate = appHfpGetCallState();
+                
+                    if(callstate == hfp_call_state_held_active)
                     {
-                        appAvForward();
+                        HfpCallHoldActionRequest( hfp_primary_link,hfp_chld_hold_active_accept_other,0);
                     }
+                    else if(appAvPlayStatus() == avrcp_play_status_playing)
+                    {
+                        if(appConfigIsRealLeft())
+                        {                   
+                            appAvBackward();
+                        }
+                        else
+                        {
+                            appAvForward();
+                        }
+                    }
+                }
+                else
+                {
+                    appScoFwdTwcDoubleClick();
                 }
             }         
 		    break;
@@ -1130,20 +1153,25 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
             break;
                                 
         case APP_MFB_BUTTON_HELD_LONG_2S:
-            DEBUG_LOG("UI_INTERNAL--------APP_MFB_BUTTON_HELD_LONG_1_5S");
+            DEBUG_LOG("UI_INTERNAL--------APP_MFB_BUTTON_HELD_LONG_2S");
 			if(appUserIsHeadsetPowerOn() && (appSmIsOutOfCase()))
             {
-
-                if (appHfpIsCallIncoming())
+                if(appConfigIsLeft())
                 {
-                    appHfpCallReject();
-                }
-                else if (appScoFwdIsCallIncoming())
-                {
-                    appScoFwdCallReject();
-                }
-                else if((appGetState() != APP_STATE_HANDSET_PAIRING)&&(appGetState() != APP_STATE_PEER_PAIRING))
-                {                   
+                    hfp_call_state callstate = appHfpGetCallState();
+                    
+                    if(callstate == hfp_call_state_incoming)
+                    {
+                        appHfpCallReject();
+                    }                
+                    else if(callstate == hfp_call_state_twc_incoming)
+                    {
+                        HfpCallHoldActionRequest( hfp_primary_link,hfp_chld_release_held_reject_waiting,0);
+                    }
+                    else if (appScoFwdIsCallIncoming())
+                    {
+                        appScoFwdCallReject();
+                    }
                     if (appHfpIsConnected() && (!appHfpIsCall())) 
                     {
                         if(appHfpIsVoiceRecognitionActive())
@@ -1155,11 +1183,12 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
                             appHfpCallVoice();
                         }
                     }
-                    else if(appConfigIsRight())
-                    {
-                        appScoFwdSyncVoice();
-                    }
                 }
+                else
+                {
+                    appScoFwdTwcLongPress();
+                }
+
             }
             break;
 

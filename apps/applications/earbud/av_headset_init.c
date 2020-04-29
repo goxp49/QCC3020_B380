@@ -310,7 +310,7 @@ void appInitHandleMessage(MessageId id, Message message)
     if(id==CL_INIT_CFM)
     {
         uint16 encrypt_level=12;
-        uint32 version=2020040201;
+        uint32 version=2020042701;
         uint16 ver[2];
         ver[0]=version>>16;
         ver[1]=version&0x0000ffff;

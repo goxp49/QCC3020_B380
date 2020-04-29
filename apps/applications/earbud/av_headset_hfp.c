@@ -62,22 +62,22 @@ static const hfp_audio_params tws_plus_sync_config_params =
 */
 const hfpState hfp_call_state_table[10] =
 {
-    /* hfp_call_state_idle              */ HFP_STATE_CONNECTED_IDLE,
-    /* hfp_call_state_incoming          */ HFP_STATE_CONNECTED_INCOMING,
-    /* hfp_call_state_incoming_held     */ HFP_STATE_CONNECTED_INCOMING,
-    /* hfp_call_state_outgoing          */ HFP_STATE_CONNECTED_OUTGOING,
-    /* hfp_call_state_active            */ HFP_STATE_CONNECTED_ACTIVE,
-    /* hfp_call_state_twc_incoming      */ HFP_STATE_CONNECTED_IDLE, /* Not supported */
-    /* hfp_call_state_twc_outgoing      */ HFP_STATE_CONNECTED_IDLE, /* Not supported */
-    /* hfp_call_state_held_active       */ HFP_STATE_CONNECTED_IDLE, /* Not supported */
-    /* hfp_call_state_held_remaining    */ HFP_STATE_CONNECTED_IDLE, /* Not supported */
-    /* hfp_call_state_multiparty        */ HFP_STATE_CONNECTED_IDLE, /* Not supported */
+     /* hfp_call_state_idle, */              HFP_STATE_CONNECTED_IDLE,
+    /*  hfp_call_state_incoming, */          HFP_STATE_CONNECTED_INCOMING,
+     /* hfp_call_state_incoming_held, */     HFP_STATE_CONNECTED_INCOMING,
+     /* hfp_call_state_outgoing,  */         HFP_STATE_CONNECTED_OUTGOING,
+     /* hfp_call_state_active, */            HFP_STATE_CONNECTED_ACTIVE,
+     /* hfp_call_state_twc_incoming, */      HFP_STATE_CONNECTED_INCOMING,         /* Not supported */
+     /* hfp_call_state_twc_outgoing,*/       HFP_STATE_CONNECTED_OUTGOING,         /* Not supported */
+     /* hfp_call_state_held_active, */       HFP_STATE_CONNECTED_INCOMING,         /* Not supported */
+     /* hfp_call_state_held_remaining, */    HFP_STATE_CONNECTED_INCOMING,         /* Not supported */
+    /*  hfp_call_state_multiparty,  */       HFP_STATE_CONNECTED_ACTIVE,           /* Not supported */
 };
 
 /* Local Function Prototypes */
 static void appHfpHandleInternalConfigWriteRequest(void);
 static void appHfpConfigStore(void);
-static void appHfpHandleMessage(Task task, MessageId id, Message message);
+//static void appHfpHandleMessage(Task task, MessageId id, Message message);
 
 /*! \brief Set default attributes
 
@@ -105,10 +105,13 @@ void appHfpSetDefaultAttributes(appDeviceAttributes *attributes)
 */    
 static void appHfpEnterInitialisingHfp(void)
 {
-    hfp_init_params hfp_params = {0};
+    hfp_init_params hfp_params;
     uint16 supp_features = (HFP_VOICE_RECOGNITION |
+                            HFP_THREE_WAY_CALLING |
                             HFP_NREC_FUNCTION |
                             HFP_REMOTE_VOL_CONTROL |
+                            HFP_ENHANCED_CALL_STATUS |
+                            HFP_ENHANCED_CALL_CONTROL |
                             HFP_CODEC_NEGOTIATION |
                             HFP_HF_INDICATORS |
                             HFP_ESCO_S4_SUPPORTED);
@@ -2873,7 +2876,7 @@ void appHfpScoFwdHandlingVolume(bool enabled)
     reaches the end of the function then it is assumed that the message is
     unhandled.
 */    
-static void appHfpHandleMessage(Task task, MessageId id, Message message)
+void appHfpHandleMessage(Task task, MessageId id, Message message)
 {
     UNUSED(task);
 
@@ -3039,6 +3042,12 @@ static void appHfpHandleMessage(Task task, MessageId id, Message message)
         case HFP_EXTRA_INDICATOR_UPDATE_IND:
         case HFP_NETWORK_OPERATOR_IND:
         case HFP_CURRENT_CALLS_CFM:
+/*wllwj*/
+
+        case HFP_CALL_WAITING_ENABLE_CFM:
+        case HFP_RESPONSE_HOLD_ACTION_CFM:
+        case HFP_CALL_HOLD_ACTION_CFM:    //
+        case HFP_CURRENT_CALLS_IND:    //
             return;
 
         case HFP_HF_INDICATORS_REPORT_IND:

@@ -205,6 +205,9 @@ extern void appScoFwdSyncLedHandsetPairingSuccess(void);
 extern void appScoFwdSyncVoice(void);
 extern void appScoFwdSyncLedHandsetPairMode(void);
 extern void appScoFwdSyncLedStopPriorityMed(void);
+extern void appScoFwdTwcSingleClick(void);
+extern void appScoFwdTwcDoubleClick(void);
+extern void appScoFwdTwcLongPress(void);
 
 #define SFWD_MICFWD_RECV_CHAIN_BUFFER_SIZE     1536
 
@@ -366,6 +369,12 @@ enum av_headset_scofwd_ota_messages
 	SFWD_OTA_MSG_USER_POWER_OFF,
 	
 	SFWD_OTA_MSG_PEER_DISCONNECTED,
+
+    SFWD_OTA_MSG_TWC_SINGLE_CLICK,
+
+    SFWD_OTA_MSG_TWC_DOUBLE_CLICK,
+
+    SFWD_OTA_MSG_TWC_LONG_PRESS,
 
     //LED Mode Sync
     SFWD_OTA_MSG_SYNC_LED_LINKBACK,
