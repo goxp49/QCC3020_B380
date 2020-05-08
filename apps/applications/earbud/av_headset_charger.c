@@ -191,7 +191,7 @@ static void appChargerCheck(void)
             case STANDBY:
                 DEBUG_LOG("appChargerCheck, standby");
 			#ifdef POWER_MANAGER				
-				MessageSendLater(&theCharger->task,CHARGER_COMPLETE_POWER_OFF,0,D_SEC(60));
+				MessageSendLater(&theCharger->task,CHARGER_COMPLETE_POWER_OFF, 0, CHARGE_COMPLETE_TIMEOUT);
 			#endif
                 break;
             case PRE_CHARGE:

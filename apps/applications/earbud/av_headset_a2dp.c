@@ -463,7 +463,8 @@ static void appA2dpEnterConnectedSignalling(avInstanceTaskData *theInst)
         #if 1
         appAdvStopAdvertising();
 
-        MessageCancelAll(appGetUiTask(),APP_USER_STOP_BLE_SCAN);
+        MessageCancelAll(appGetUiTask(), APP_USER_STOP_BLE_SCAN);
+        MessageCancelAll(appGetUiTask(), APP_PEER_CONNECT_STATE_CHECK);
         #endif
 		MessageCancelAll(appGetUiTask(), APP_USER_RECONNECT_PEER);
 		if(appPeerSyncIsComplete())
@@ -1762,7 +1763,7 @@ static void appA2dpHandleA2dpSignallingDisconnectInd(avInstanceTaskData *theInst
             {
 			#ifdef ENTER_PAIRING_HANDSET_DISCONNECT
                 /* Play disconnected UI if not the peer */
-                if (!appDeviceIsPeer(&theInst->bd_addr) && (appUserIsResetState() == FALSE))
+                if (appDeviceIsHandset(&theInst->bd_addr) && (appUserIsResetState() == FALSE))
                 {
                     DEBUG_LOG("##########444444444##########");
                     
@@ -1773,7 +1774,7 @@ static void appA2dpHandleA2dpSignallingDisconnectInd(avInstanceTaskData *theInst
                     appUiAvDisconnected();
                 }
             
-				if (!appDeviceIsPeer(&theInst->bd_addr))
+				if (appDeviceIsHandset(&theInst->bd_addr))
 				{
 					if((appConfigIsLeft() || !appDeviceGetPeerBdAddr(NULL)) && appUserIsHeadsetPowerOn())
 					{
@@ -1792,7 +1793,7 @@ static void appA2dpHandleA2dpSignallingDisconnectInd(avInstanceTaskData *theInst
             {
 
                 /* Play disconnected UI if not the peer */
-                if (!appDeviceIsPeer(&theInst->bd_addr) && (appUserIsResetState() == FALSE))
+                if (appDeviceIsHandset(&theInst->bd_addr) && (appUserIsResetState() == FALSE))
                 {
                     DEBUG_LOG("##########666666666666##########");
                     appUiAvDisconnected();
@@ -1813,7 +1814,7 @@ static void appA2dpHandleA2dpSignallingDisconnectInd(avInstanceTaskData *theInst
         {
             
             /* Play disconnected UI if not the peer */
-            if (!appDeviceIsPeer(&theInst->bd_addr) && (appUserIsResetState() == FALSE))
+            if (appDeviceIsHandset(&theInst->bd_addr) && (appUserIsResetState() == FALSE))
             {
                 DEBUG_LOG("##########2222222222222222222##########");
                 appUiAvDisconnected();

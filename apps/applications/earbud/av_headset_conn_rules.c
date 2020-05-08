@@ -924,7 +924,12 @@ static ruleAction ruleOutOfCaseConnectHandset(void)
 */
 static ruleAction ruleLinkLossConnectHandset(void)
 {
-
+#ifdef SINGLE_BDADDR
+	if(appUserIsPageScanDisable())
+	{
+		 return RULE_ACTION_IGNORE;
+	}
+#endif
     RULE_LOG("ruleLinkLossConnectHandset");
     return ruleConnectHandset(RULE_CONNECT_LINK_LOSS, RULE_POST_HANDSET_CONNECT_ACTION_NONE);
 }
@@ -1180,7 +1185,12 @@ static ruleAction ruleOutOfCaseConnectPeerHandset(void)
 */
 static ruleAction ruleLinkLossConnectPeerHandset(void)
 {
-
+#ifdef SINGLE_BDADDR
+	if(appUserIsPageScanDisable())
+	{
+		 return RULE_ACTION_IGNORE;
+	}
+#endif
     RULE_LOG("ruleLinkLossConnectPeerHandset");
     return ruleConnectPeerHandset(RULE_CONNECT_LINK_LOSS);
 }

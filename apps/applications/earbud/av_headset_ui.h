@@ -200,6 +200,8 @@ typedef struct
 	bool usb_attached;
 
 	bool master_addr_in_used;
+    
+	bool peer_connect_check;
 #endif
     uint8 power_on_key_check_num;
 

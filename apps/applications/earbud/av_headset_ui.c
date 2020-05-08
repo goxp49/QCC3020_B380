@@ -956,7 +956,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
 #ifdef BM_MUL_CLICK
 		case APP_MFB_BUTTON_SHORT_PRESS:
             DEBUG_LOG("UI_INTERNAL--------APP_MFB_BUTTON_SHORT_PRESS");
-			if(appUserIsHeadsetPowerOn() && (appSmIsOutOfCase()))
+			if(appUserIsHeadsetPowerOn() && (appSmIsOutOfCase()) && appUserGetPowerOffEnable())
 			{
 			    if(appConfigIsLeft())
                 {
@@ -997,7 +997,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
         
 		case APP_MFB_BUTTON_DOUBLE_PRESS:
             DEBUG_LOG("UI_INTERNAL--------APP_MFB_BUTTON_DOUBLE_PRESS");
-			if(appUserIsHeadsetPowerOn() && (appChargerIsDisconnected()))
+			if(appUserIsHeadsetPowerOn() && (appChargerIsDisconnected())  && appUserGetPowerOffEnable())
             {
             
                 if(appConfigIsLeft())
@@ -1029,7 +1029,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
             
 		case APP_MFB_BUTTON_TRIPLE_PRESS:
             DEBUG_LOG("UI_INTERNAL--------UI_MESSAGE_TRIPLE_BUTTON_TRIGGER");
-			if(appUserIsHeadsetPowerOn() && (appChargerIsDisconnected()))
+			if(appUserIsHeadsetPowerOn() && (appChargerIsDisconnected()) && appUserGetPowerOffEnable())
             {
             
                 if(appConfigIsRealLeft())
@@ -1154,7 +1154,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
                                 
         case APP_MFB_BUTTON_HELD_LONG_2S:
             DEBUG_LOG("UI_INTERNAL--------APP_MFB_BUTTON_HELD_LONG_2S");
-			if(appUserIsHeadsetPowerOn() && (appSmIsOutOfCase()))
+			if(appUserIsHeadsetPowerOn() && (appSmIsOutOfCase())  && appUserGetPowerOffEnable())
             {
                 if(appConfigIsLeft())
                 {
@@ -1346,9 +1346,17 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
 				}
 				else
 				{			
-					appAdvStartAdvCurrentUseBdaddr();					
-					
+				
+                    if(!appPeerSyncIsComplete() && appUiIsMasterAddrInUsed() && (appGetUi()->peer_connect_check == FALSE))
+                    {
+                        DEBUG_LOG("APP_USER_STOP_BLE_SCAN -3 ");
+                        /*does not sync complete, need to check we need to change*/
+                        MessageSendLater(appGetUiTask(), APP_PEER_CONNECT_STATE_CHECK,0,D_SEC(5));
+                    }
+					appAdvStartAdvCurrentUseBdaddr();
 				}
+                
+				appGetUi()->peer_connect_check = TRUE;
 			}
 		    break;
         
@@ -1576,7 +1584,7 @@ static void appUiHandleMessage(Task task, MessageId id, Message message)
         if(ChargerStatus() == STANDBY)
         {
             DEBUG_LOG("Restart timer");
-            MessageSendLater(&appGetCharger()->task,CHARGER_COMPLETE_POWER_OFF,0,D_SEC(60));
+            MessageSendLater(&appGetCharger()->task,CHARGER_COMPLETE_POWER_OFF, 0, CHARGE_COMPLETE_TIMEOUT);
         }
         break;
 
@@ -1610,7 +1618,7 @@ void appUiInit(void)
 #ifdef SINGLE_BDADDR
 	theUi->page_scan_disable = FALSE;
 	theUi->master_addr_in_used = FALSE;
-
+	theUi->peer_connect_check = FALSE;
 #endif
 #ifdef POWER_MANAGER
 	theUi->bat_last_percent = 0;
@@ -1660,7 +1668,6 @@ void appUserPowerOn(void)
 		appUserRegisterPhyStateTask();
 		MessageSendLater(appGetUiTask(), APP_BATTERY_UPDATE_DETECT,0, D_SEC(20));
                 
-//		MessageSendLater(appGetUiTask(), APP_POWER_OFF_ENABLE,0,DISABLE_POWER_OFF_TIMEOUT);
 	#ifdef SINGLE_BDADDR
 		if(appDeviceGetPeerBdAddr(NULL))
 		{			
@@ -1960,6 +1967,7 @@ void appUserDisableAllRfActivity(void)
 	MessageCancelAll(appGetUiTask(),APP_LINKBACK_FAILED_ENTER_PAIRING);
     MessageCancelAll(appGetUiTask(),APP_USER_TRANFER_PEER_TDL);
     MessageCancelAll(appGetUiTask(),APP_LINK_LOSS);
+	MessageCancelAll(appGetUiTask(),APP_PEER_CONNECT_STATE_CHECK);
 	/*disable all work about rf*/
 	ConnectionDmBleSetAdvertiseEnable(FALSE);
 	ConnectionDmBleSetScanEnable(FALSE);
@@ -2240,6 +2248,7 @@ void appUiClearMessageWhenPowerOff(void)
 	MessageCancelAll(appGetUiTask(),APP_CHANGE_LOCAL_ADDR);
 	MessageCancelAll(appGetUiTask(),APP_LINKBACK_FAILED_ENTER_PAIRING);
 	MessageCancelAll(appGetUiTask(),APP_POWER_ON_RECONNECT);
+	MessageCancelAll(appGetUiTask(), APP_PEER_CONNECT_STATE_CHECK);
 	appAdvStopAdvertising();
 	appScanBleStopScanning();
 	

@@ -45,14 +45,13 @@
 /*! solve the promblem which hfp state doesn't change corret will cause a a2dp disconnect to peer device*/
 #define MEDIA_START_CONFIRM
 
+#define LED_SYNC_HANDSET_PAIRINGx
+
 #ifdef POWER_MANAGER
 #define LOW_BAT_WARNING_INTERVAL D_SEC(180)	/*Second*/
 #endif
 
-#ifdef BM_POWER_ON
-#define DISABLE_POWER_OFF_TIMEOUT D_SEC(6)
-
-#endif
+#define CHARGE_COMPLETE_TIMEOUT D_SEC(180)	/*Second*/
 
 
 #ifdef LINK_LOSS
